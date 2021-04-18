@@ -11,6 +11,9 @@ require('./models/User');
 const express = require('express');
 const mongoose = require('mongoose');
 
+// require routes
+const authRoutes = require('./routes/authRoutes');
+
 // require cors
 const cors = require('cors');
 
@@ -21,6 +24,7 @@ app.use(cors);
 app.use(express.json());
 
 // set routes to be used
+app.use('/auth', authRoutes);
 
 // set up mongo database
 const mongoURI = process.env.DB_CON_STR;
