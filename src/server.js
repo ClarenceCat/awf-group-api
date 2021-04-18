@@ -20,8 +20,21 @@ const cors = require('cors');
 const app = express();
 
 // use cors and exporess json
-app.use(cors);
+app.use(cors());
 app.use(express.json());
+
+// set up cors policy
+app.use((req, res, next) => {
+    // allow requests from all origins
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', '*');
+
+    if(req.method === 'OPTION'){
+        req.header('Access-Control-Allow-Methods', 'PUT, POST, PATCH, DELETE, GET');
+        return res.status(200).json({});
+    }
+    next();
+})
 
 // set routes to be used
 app.use('/auth', authRoutes);
@@ -44,22 +57,10 @@ mongoose.connection.on('error', (err) => {
 
 mongoose.set('useFindAndModify', false);
 
-// set up cors policy
-app.use((req, res, next) => {
-    // allow requests from all origins
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', '*');
-
-    if(req.method === 'OPTION'){
-        req.header('Access-Control-Allow-Methods', 'PUT, POST, PATCH, DELETE, GET');
-        return res.status(200).json({});
-    }
-    next();
-})
 
 // test route
 app.get('/', (req, res) => {
-    return res.send("Test route");
+    return res.status(200).send("Test route");
 })
 
 // set port

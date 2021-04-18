@@ -9,7 +9,8 @@ const router = express.Router();
 
 // Description: Post request handler 
 router.post('/register', async (req, res) => {
-    const { firstName, lastName, email, password } = req.body; ;
+    const { firstName, lastName, email, password } = req.body; 
+
 
     if(!email || !password || !firstName || !lastName){
         return res.status(200).send({error: 'Credentials are missing'})
@@ -37,7 +38,7 @@ router.post('/register', async (req, res) => {
         // generate token 
         const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET); 
 
-        res.send({ 
+        res.status(200).send({ 
             token: token,
             user: {
                 email: newUser.email,
