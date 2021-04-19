@@ -6,6 +6,9 @@ require('dotenv').config();
 
 // require the models 
 require('./models/User');
+require('./models/Task');
+require('./models/Project');
+require('./models/Group');
 
 // require dependencies 
 const express = require('express');
