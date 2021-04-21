@@ -82,7 +82,52 @@ router.post('/', requireAuth, async (req, res) => {
 // @req: none
 // @res: { project: {id, title, description, created, [members], [[tasks: {id, title, description, due_date, created, [assigned_to] }]]} }
 router.get('/:id', requireAuth, async (req, res) => {
+    // retrieve the user object from the req
+    const { user } = req;
 
+    // retrieve the id param from the request params
+    const { id } = req.params;
+
+    try{
+        // attempt to find a project with the specified id where the user is a member
+        const project = await Project.findOne({_id: id, members: user._id});
+
+        // check if a project with the specified member and id exists
+        if(!project) {
+            return res.status(401).send({error: `You are not a member of any projects with the id ${id}`})
+        }
+
+        // process members list
+        let members = [];
+        
+        // loop through the members and search for the corresponding user to add to member list
+        for(let member_id of project.members){
+            // attempt to find the user with the id 
+            const member_found = User.findById(member_id);
+
+            // make sure the user exists
+            if(member_found){
+                // add the user's first and last name to the list of members that will be returned to the user
+                members.push( `${member_found.firstName} ${member_found.lastName}` )
+            }
+        }
+
+        // respond with the details of the project
+        return res.status(200).send({
+            project: {
+                id: project._id,
+                title: project.title,
+                description: project.description,
+                members: members,
+                tasks: project.tasks
+            }
+        });
+    }
+    catch(e)
+    {
+        console.error(e);
+        return res.status(500).send({error: "error retrieving project details"})
+    }
 })
 
 
