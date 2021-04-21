@@ -16,7 +16,7 @@ const projectSchema = new mongoose.Schema({
         required: true,
         default: Date.now
     },
-    members: [{type: mongoose.Schema.Types.ObjectId, ref: 'Task'}],
+    members: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
     tasks: [{type: mongoose.Schema.Types.ObjectId, ref: 'Task'}]
 });
 
