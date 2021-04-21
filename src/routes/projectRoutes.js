@@ -135,7 +135,7 @@ router.get('/:id', requireAuth, async (req, res) => {
 // Description: This route allows a user to edit the details of a project - its title or description
 // @req - { title, description }
 // @res - { id, title, description }
-router.put('/:id', requireAuth, (req, res) => {
+router.put('/:id', requireAuth, async (req, res) => {
     // retrieve the user from the req object
     const { user } = req;
 

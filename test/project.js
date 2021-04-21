@@ -188,4 +188,29 @@ describe("Project API", () => {
             });
         })
     })
+
+
+    // TEST 4
+    // ROUTE: @PUT /projects/:id
+    // Description: This tests the route that allows users to update project information
+    // Tests Happy Path
+    // Expected Return: The updated project info
+    describe('PUT /projects/:id', () => {
+        // specify the changes you would like to make
+        const new_project_info = { title: "New Title", description: "This project has been updated" };
+        it('Should update the project details and return the updated project info', (done) => {
+            // make api call
+            chai.request(server).put(`/projects/${project1._id}`).set("authorization", test_user1_token).send(new_project_info)
+            .end((err, response) => {
+                response.should.have.status(200);
+                response.body.should.have.property('project');
+                if(response.body.project){
+                    response.body.project.should.have.property('id').eq(project1._id.toString());
+                    response.body.project.should.have.property('title').eq('New Title');
+                    response.body.project.should.have.property('description').eq('This project has been updated');
+                }
+                done();
+            })
+        })
+    });
 })
