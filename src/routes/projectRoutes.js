@@ -131,42 +131,91 @@ router.get('/:id', requireAuth, async (req, res) => {
 })
 
 // @PUT /projects/:id
+// middleware: requireAuth
 // Description: This route allows a user to edit the details of a project - its title or description
 // @req - { title, description }
 // @res - { id, title, description }
+router.put('/:id', requireAuth, (req, res) => {
+    // retrieve the user from the req object
+    const { user } = req;
+
+    // retrieve the project id from the params
+    const { id } = req.params;
+
+    // retrieve the updated values from the request
+    const { title, description } = req.body;
+
+    // make sure the user has submitted at least one thing to update
+    if(!title && !description){
+        return res.status(401).send({error: "Missing credentials"})
+    }
+
+    let update_fields = {};
+
+    // check if the user wants to update the title field
+    if(title){
+        update_fields['title'] = title;
+    }
+
+    // check if the user wants to update the description property 
+    if(description){
+        update_fields['description'] = description;
+    }
+
+    try{
+        // attempt to find a project and update it with the new fields
+        const updated_project = await Project.findOneAndUpdate({_id: id, members: user._id}, update_fields, { new: true });
+
+        if(!updated_project){
+            return res.status(400).send({ error: "Could not find Project to update" });
+        }
+
+        // return specific project info to the user
+        return res.status(200).send({ project: { id: updated_project._id, title: updated_project.title, description: updated_project.description } });
+    }
+    catch(e){
+        console.error(`Failed to update the project with the id ${id}`);
+    }
+})
 
 
 // @DELETE /projects/:id
+// middleware: requireAuth
 // Description: This route is used to delete a project 
 // @req - none
 // @res - { project: { id, title, description }}
 
 
 // @POST /projects/:id/tasks
+// middleware: requireAuth
 // Description: adds a task to a project
 // @req - { title, description, due_date }
 // @res - { task: { id, title, description, due_date, assigned_to }}
 
 
 // @PUT /projects/:project_id/tasks/:task_id
+// middleware: requireAuth
 // Description: This route allows a user to modify the title, description, or due date of a task
 // @req - { title, description, due_date }
 // @res - { task: { id, title, description, due_date, assigned_to }}
 
 
 // @DELETE /projects/:project_id/tasks/:task_id
+// middleware: requireAuth
 // Description: This route allows a user to delete a task from the list of tasks in a project
 // @req - None
 // @res - { task: { id, title, description, due_date, assigned_to }}
 
 
 // @POST /projects/:id/members
+// middleware: requireAuth
 // Description: allows a user to add a member to a project
 // @req - { email }
 // @res - { [members] }
 
 
 // @DELETE /projects/:id/members 
+// middleware: requireAuth
 // Description: This route allows a user to remove another user from the list of members
 // @req - { email }
 // @res - { [members] }
