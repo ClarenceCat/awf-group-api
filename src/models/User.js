@@ -20,8 +20,7 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true
-    },
-    projects: [{type: mongoose.Schema.Types.ObjectId, ref: 'Project'}]
+    }
 })
 
 userSchema.pre('save', function(next) {
