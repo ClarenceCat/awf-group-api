@@ -130,6 +130,47 @@ router.get('/:id', requireAuth, async (req, res) => {
     }
 })
 
+// @PUT /projects/:id
+// Description: This route allows a user to edit the details of a project - its title or description
+// @req - { title, description }
+// @res - { id, title, description }
+
+
+// @DELETE /projects/:id
+// Description: This route is used to delete a project 
+// @req - none
+// @res - { project: { id, title, description }}
+
+
+// @POST /projects/:id/tasks
+// Description: adds a task to a project
+// @req - { title, description, due_date }
+// @res - { task: { id, title, description, due_date, assigned_to }}
+
+
+// @PUT /projects/:project_id/tasks/:task_id
+// Description: This route allows a user to modify the title, description, or due date of a task
+// @req - { title, description, due_date }
+// @res - { task: { id, title, description, due_date, assigned_to }}
+
+
+// @DELETE /projects/:project_id/tasks/:task_id
+// Description: This route allows a user to delete a task from the list of tasks in a project
+// @req - None
+// @res - { task: { id, title, description, due_date, assigned_to }}
+
+
+// @POST /projects/:id/members
+// Description: allows a user to add a member to a project
+// @req - { email }
+// @res - { [members] }
+
+
+// @DELETE /projects/:id/members 
+// Description: This route allows a user to remove another user from the list of members
+// @req - { email }
+// @res - { [members] }
+
 
 
 module.exports = router;
