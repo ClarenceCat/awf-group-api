@@ -17,7 +17,24 @@ const projectSchema = new mongoose.Schema({
         default: Date.now
     },
     members: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
-    tasks: [{type: mongoose.Schema.Types.ObjectId, ref: 'Task'}]
+    tasks: [{
+        title: {
+            type: String,
+            required: true
+        },
+        description: {
+            type: String
+        },
+        dueDate: {
+            type: Date
+        },
+        created: {
+            type: Date,
+            required: true,
+            default: Date.now
+        },
+        assignedTo: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}]
+    }]
 });
 
 module.exports = mongoose.model('Project', projectSchema);
