@@ -38,9 +38,11 @@ describe("Project API", () => {
     let project1 = null;
     let project2 = null;
 
+    let created_project = null;
+
     // Before function
-    // Called before the tests are run
-    before((async () => {
+    // Called before each test is run
+    beforeEach((async () => {
         // create dummy users 
         try{
             // try to create test user 1
@@ -80,8 +82,8 @@ describe("Project API", () => {
     }));
 
     // after function
-    // This is called after all of the tests have completed running
-    after((async () => {
+    // This is called after each test is run
+    afterEach((async () => {
         // remove each project where test user 1 is a member
         try{
             // delete all projects associated with test user 1
@@ -213,4 +215,25 @@ describe("Project API", () => {
             })
         })
     });
+
+
+    // TEST 5 
+    // ROUTE: @DELETE /projects/:id 
+    // Description: This tests the route that allows users to delete projects
+    // Tests Happy Path
+    // Expected Return: An array of projects not containing the removed project
+    describe('DELETE /projects/:id', () => {
+        it('Should delete the specified project', (done) => {
+            chai.request(server).delete(`/projects/${project1._id}`).set("authorization", test_user1_token)
+            .end((err, response) => {
+                response.should.have.status(200);
+                response.body.should.have.property('projects');
+                if(response.body.projects){
+                    response.body.projects.length.should.be.eq(1);
+                }
+                done();
+            })
+        })
+    })
+    
 })

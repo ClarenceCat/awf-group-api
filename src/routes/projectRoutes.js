@@ -183,7 +183,42 @@ router.put('/:id', requireAuth, async (req, res) => {
 // middleware: requireAuth
 // Description: This route is used to delete a project 
 // @req - none
-// @res - { project: { id, title, description }}
+// @res - { projects: [{ id, title, description }]} - list of projects after the specified project has been removed
+router.delete('/:id', requireAuth, async (req, res) => {
+    // retrieve the user from the req
+    const { user } = req;
+
+    // retrieve the project id from the params
+    const { id } = req.params;
+
+    try{
+        // attempt to delete the project with the specified id, containing the specified member
+        const deleted = await Project.findOneAndDelete({ _id: id, members: user._id });
+
+        // check if a project was found and deleted
+        if(!deleted){
+            return res.status(400).send({ error: "Could not find the project to delete" });
+        }
+
+        const updated_list = await Project.find({members: user._id});
+
+        let ret_projects = [];
+        // loop through the updated list and add the needed details to the 
+        for(let project of updated_list){
+            if(project){
+                // add the project to the list of ret_projects
+                ret_projects.push({ id: project._id, title: project.title, description: project.description });
+            }
+        }
+
+        // respond with the info for the project that was deleted
+        return res.status(200).send({ projects: ret_projects});
+    }
+    catch(e){
+        console.error(`error deleting project with id ${id}`);
+        console.error(e);
+    }
+})
 
 
 // @POST /projects/:id/tasks
