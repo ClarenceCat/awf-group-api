@@ -33,6 +33,7 @@ describe("Project API", () => {
     let testuser2 = null;
 
     let test_user1_token = null;
+    let test_user2_token = null;
 
     let project1 = null;
     let project2 = null;
@@ -74,6 +75,7 @@ describe("Project API", () => {
 
         // create jwt for test user 1
         test_user1_token = jwt.sign({ userId: testuser1._id }, process.env.JWT_SECRET);
+        test_user2_token = jwt.sign({ userId: testuser2._id}, process.env.JWT_SECRET);
 
     }));
 
