@@ -14,6 +14,7 @@ const mongoose = require('mongoose');
 
 // require routes
 const authRoutes = require('./routes/authRoutes');
+const projectRoutes = require('./routes/projectRoutes');
 
 // require cors
 const cors = require('cors');
@@ -39,6 +40,7 @@ app.use((req, res, next) => {
 
 // set routes to be used
 app.use('/auth', authRoutes);
+app.use('/projects', projectRoutes);
 
 // set up mongo database
 const mongoURI = process.env.DB_CON_STR;

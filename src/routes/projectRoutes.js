@@ -26,7 +26,7 @@ router.get('/', requireAuth, (req, res) => {
 // @req: { title, description }
 // @res: { project: { id, title, description } }
 router.post('/', requireAuth, (req, res) => {
-
+    
 })
 
 
@@ -36,7 +36,7 @@ router.post('/', requireAuth, (req, res) => {
 // @req: none
 // @res: { project: {id, title, description, created, [members], [[tasks: {id, title, description, due_date, created, [assigned_to] }]]} }
 router.get('/:id', requireAuth, (req, res) => {
-    
+
 })
 
 
