@@ -267,5 +267,35 @@ describe("Project API", () => {
 
     })
     
-    
+    // TEST 7
+    // ROUTE: @PUT /projects/:project_id/tasks/:task_id
+    // Description: This tests the route that allows the user to update a task
+    // Tests Happy Path
+    // Expected Return: The newly updated task
+    describe('PUT /projects/:project_id/tasks/:task_id', () => {
+        // define new task
+        const task_details = { title: "Updated Task", description: "Test update a task", due_date: "2021-04-25" }
+        it("Should update a specific task for the specified project", (done) => {
+            // make api call
+            chai.request(server).put(`/projects/${project1._id}/tasks/${project1.tasks[0]._id}`).set("authorization", test_user1_token).send(task_details)
+            .end((err, response) => {
+                response.should.have.status(200);
+                response.body.should.have.property('task');
+                if(response.body.task){
+                    response.body.task.should.have.property("id").eq(project1.tasks[0]._id.toString());
+                    response.body.task.should.have.property('title').eq("Updated Task");
+                    response.body.task.should.have.property('description').eq("Test update a task");
+                    response.body.task.should.have.property('due_date').eq("2021-04-25");
+                    response.body.task.should.have.property('assigned_to');
+                    if(response.body.task.assigned_to){
+                        response.body.task.assigned_to.length.should.be.eq(0);
+                    }
+
+                    done();
+                }
+            })
+        })
+
+    })
+
 })

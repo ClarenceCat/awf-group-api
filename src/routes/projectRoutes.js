@@ -112,6 +112,22 @@ router.get('/:id', requireAuth, async (req, res) => {
             }
         }
 
+        let ret_tasks = []
+        // process tasks to send 
+        for(let task of project.tasks){
+            const add_task = {id: task._id, title: task.title, description: task.description, assigned_to: task.assignedTo};
+
+            // check if the task has a due date
+            if(task.dueDate){
+                add_task['due_date'] = new Date(task.dueDate).toISOString().slice(0, 10);
+            }
+            else{
+                add_task['due_date'] = '';
+            }
+            // add the task the list of return tasks
+            ret_tasks.push(add_task);
+        }
+
         // respond with the details of the project
         return res.status(200).send({
             project: {
@@ -119,7 +135,7 @@ router.get('/:id', requireAuth, async (req, res) => {
                 title: project.title,
                 description: project.description,
                 members: members,
-                tasks: project.tasks
+                tasks: ret_tasks
             }
         });
     }
@@ -273,6 +289,9 @@ router.post('/:id/tasks', requireAuth, async (req, res) => {
         if(inserted_task.dueDate){
             ret_task['due_date'] = new Date(inserted_task.dueDate).toISOString().slice(0,10);
         }
+        else{
+            ret_task['due_date'] = '';
+        }
 
         return res.status(201).send({ task: ret_task })
     }
@@ -290,6 +309,72 @@ router.post('/:id/tasks', requireAuth, async (req, res) => {
 // Description: This route allows a user to modify the title, description, or due date of a task
 // @req - { title, description, due_date }
 // @res - { task: { id, title, description, due_date, assigned_to }}
+router.put('/:project_id/tasks/:task_id', requireAuth, async (req, res) => {
+    // retrieve the user from the req
+    const { user } = req;
+
+    // retrieve the project id and task id from req params
+    const { project_id, task_id } = req.params;
+
+    // retrieve the values to update from the req
+    const { title, description, due_date } = req.body;
+
+    // make sure at least one of the values are present to update the task
+    if(!title && !description && !due_date){
+        return res.status(400).send({ error: "Must specify at least one value to update" });
+    }
+
+    const update_fields = {};
+
+    // check if the user wishes to update the title
+    if(title){
+        update_fields['tasks.$.title'] = title;
+    }
+
+    // check if the user wishes to update the description
+    if(description){
+        update_fields['tasks.$.description'] = description;
+    }
+
+    // check if the user wishes to update the title
+    if(due_date){
+        update_fields['tasks.$.dueDate'] = new Date(due_date);
+    }
+
+    try{
+        // attempt to update the task subdocument
+        const update = await Project.findOneAndUpdate({_id: project_id, "tasks._id": task_id}, {"$set": update_fields }, { new: true });
+
+        if(!update){
+            return res.status(400).send({error: "could not update the specified task"});
+        }
+
+        const updated_task = update.tasks.id(task_id);
+
+        const ret_task = {
+            id: updated_task._id,
+            title: updated_task.title,
+            description: updated_task.description,
+            assigned_to: updated_task.assignedTo
+        };
+        
+        // if the updated task has a due date, add it to the return task
+        if(updated_task.dueDate){
+            ret_task['due_date'] = new Date(updated_task.dueDate).toISOString().slice(0, 10);
+        }
+        else{
+            ret_task['due_date'] = '';
+        }
+
+        return res.status(200).send({ task: ret_task });
+    }
+    catch(e)
+    {
+        console.error(e);
+        return res.status(500).send({error: "Could not update the specified task"})
+    }
+
+})
 
 
 // @DELETE /projects/:project_id/tasks/:task_id
