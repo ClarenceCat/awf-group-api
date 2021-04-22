@@ -477,7 +477,53 @@ router.post('/:id/members', requireAuth, async (req, res) => {
 // Description: This route allows a user to remove another user from the list of members
 // @req - { email }
 // @res - { [members] }
+router.delete('/:id/members', requireAuth, async (req, res) => {
+    // get user from the req
+    const { user } = req;
 
+    // get the property id from the params
+    const { id } = req.params;
+
+    // retrieve the email of the member whomst is to be removed
+    const { email } = req.body;
+
+    try{
+        // find user to remove by email
+        const rem_user = await User.findOne({ email: email });
+
+        // make sure submitting  user is actually a member in the project
+        const find_proj = await Project.findOne({ _id: id, members: user._id });
+
+        if(!find_proj){
+            return res.status(401).send({error: "You do not have access to this project"});
+        }
+
+        // remove the member from the project
+        const updated = await Project.findOneAndUpdate({_id: id, members: rem_user._id}, { $pull: { members: rem_user._id  } }, { new: true });
+
+        if(!updated){
+            return res.status(400).send({error: `No user with the email ${email} can be removed from the project`});
+        }
+
+        // create a return array of members
+        let ret_members = [];
+        for(let member_id of updated.members){
+            // find user
+            const found_user = await User.findById(member_id);
+
+            if(found_user){
+                // add the found user to the list of members to be returned
+                ret_members.push({name: `${found_user.firstName} ${found_user.lastName}`, email: found_user.email});
+            }
+        }
+
+        return res.status(200).send({members: ret_members});
+    }
+    catch(e){
+        console.error(e);
+        return res.status(500).send({error: "Failed to remove member"})
+    }
+})
 
 
 module.exports = router;

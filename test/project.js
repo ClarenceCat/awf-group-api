@@ -340,5 +340,27 @@ describe("Project API", () => {
             })
         })
     })
+
+    // TEST 10
+    // ROUTE: @DELETE /projects/:id/members
+    // Description: Tests the route responsible for removing a member from a project
+    // Tests Happy Path
+    // Expected Return: An array of members after the deletion
+    describe('POST /projects/:id/members', () => {
+        // specify the email of the new member that is to be added
+        const rem_member = { email: login2.email };
+
+        it("Should remove a member from the specified project", (done) => {
+            chai.request(server).delete(`/projects/${project2._id}/members`).set("authorization", test_user1_token).send(rem_member)
+            .end((err, response) => {
+                response.should.have.status(200);
+                response.body.should.have.property('members');
+                if(response.body.members){
+                    response.body.members.length.should.be.eq(1);
+                }
+                done();
+            })
+        })
+    })
     
 })
