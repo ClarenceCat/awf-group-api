@@ -291,11 +291,30 @@ describe("Project API", () => {
                         response.body.task.assigned_to.length.should.be.eq(0);
                     }
 
-                    done();
                 }
+                done();
             })
         })
-
     })
 
+    // TEST 8
+    // ROUTE: @DELETE /projects/:project_id/tasks/:task_id
+    // Description: Tests the route used to delete a task from a project
+    // Tests Happy Path
+    // Expected Return: The updated list of tasks after the deletion
+    describe('DELETE /projects/:project_id/tasks/:task_id', () => {
+        it("Should update a specific task for the specified project", (done) => {
+            // make api call
+            chai.request(server).delete(`/projects/${project1._id}/tasks/${project1.tasks[0]._id}`).set("authorization", test_user1_token)
+            .end((err, response) => {
+                response.should.have.status(200);
+                response.body.should.have.property('tasks');
+                if(response.body.tasks){
+                    response.body.tasks.length.should.be.eq(1);
+                    response.body.tasks[0].should.have.property('id').eq(project1.tasks[1]._id.toString());
+                }
+                done();
+            })
+        })
+    })
 })

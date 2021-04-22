@@ -381,7 +381,45 @@ router.put('/:project_id/tasks/:task_id', requireAuth, async (req, res) => {
 // middleware: requireAuth
 // Description: This route allows a user to delete a task from the list of tasks in a project
 // @req - None
-// @res - { task: { id, title, description, due_date, assigned_to }}
+// @res - { tasks: [{ id, title, description, due_date, assigned_to }]}
+router.delete('/:project_id/tasks/:task_id', requireAuth, async (req, res) => {
+    // retrieve user from req
+    const { user } = req;
+
+    // retrieve the project id and task id from the parameters
+    const { project_id, task_id } = req.params;
+
+    try{
+        // attempt to remove the task from the project
+        const updated = await Project.findOneAndUpdate({_id: project_id, members: user._id}, { $pull: { tasks: { _id: task_id } } }, { new: true });
+
+        // process updated project doc and compile new list of tasks with the specified one removed
+        let ret_tasks = [];
+        
+        for(let task of updated.tasks){
+            let add_task = { id: task._id, title: task.title, description: task.description, assigned_to: task.assignedTo };
+
+            // check if the task has a due date
+            if(task.dueDate){
+                // add due date to the add_task object
+                add_task['due_date'] = new Date(task.dueDate).toISOString().slice(0,10);
+            }
+            else{
+                add_task['due_date'] = '';
+            }
+
+            // add task to the return task list
+            ret_tasks.push(add_task);
+        }
+
+        return res.status(200).send({ tasks: ret_tasks });
+
+    }
+    catch(e){
+        console.error(e);
+        return res.status(500).send({ error: "Failed to delete the specified post" })
+    }
+})
 
 
 // @POST /projects/:id/members
