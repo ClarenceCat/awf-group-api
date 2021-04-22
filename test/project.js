@@ -234,6 +234,38 @@ describe("Project API", () => {
                 done();
             })
         })
+    });
+
+    // TEST 6
+    // ROUTE: @POST /projects/:id/tasks
+    // Description: This tests the route that allows users to add a new task to a project
+    // Tests Happy Path
+    // Expected Return: The newly created task
+    describe('POST /projects/:id/tasks', () => {
+        // define new task
+        const task_details = { title: "Task N", description: "Test inserting a task", due_date: "2021-04-21" }
+        it("Should create a new task for the specified project", (done) => {
+            // make api call
+            chai.request(server).post(`/projects/${project1._id}/tasks`).set("authorization", test_user1_token).send(task_details)
+            .end((err, response) => {
+                response.should.have.status(201);
+                response.body.should.have.property('task');
+                if(response.body.task){
+                    response.body.task.should.have.property("id");
+                    response.body.task.should.have.property('title').eq('Task N');
+                    response.body.task.should.have.property('description').eq('Test inserting a task');
+                    response.body.task.should.have.property('due_date').eq("2021-04-21");
+                    response.body.task.should.have.property('assigned_to');
+                    if(response.body.task.assigned_to){
+                        response.body.task.assigned_to.length.should.be.eq(0);
+                    }
+
+                    done();
+                }
+            })
+        })
+
     })
+    
     
 })

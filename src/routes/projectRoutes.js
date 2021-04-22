@@ -175,6 +175,7 @@ router.put('/:id', requireAuth, async (req, res) => {
     }
     catch(e){
         console.error(`Failed to update the project with the id ${id}`);
+        return res.status(500).send({error: "Could not update project"})
     }
 })
 
@@ -217,6 +218,7 @@ router.delete('/:id', requireAuth, async (req, res) => {
     catch(e){
         console.error(`error deleting project with id ${id}`);
         console.error(e);
+        return res.status(500).send({error: "Could not delete project"})
     }
 })
 
@@ -226,6 +228,61 @@ router.delete('/:id', requireAuth, async (req, res) => {
 // Description: adds a task to a project
 // @req - { title, description, due_date }
 // @res - { task: { id, title, description, due_date, assigned_to }}
+router.post('/:id/tasks', requireAuth, async (req, res) => {
+    // retrieve the user from the req
+    const { user } = req;
+
+    // retrieve the project id from the req params
+    const { id } = req.params;
+
+    // retrieve the details of the task that is to be added
+    const { title, description, due_date } = req.body;
+
+    // check if they submitted a title and description
+    if(!title || !description){
+        return res.status(400).send({ error: "Missing Credentials" });
+    }
+
+    const new_task = { title: title, description: description };
+
+    // check if the user specified a due_date
+    if(due_date){
+        // add due date to the creation object
+        new_task['dueDate'] = new Date(due_date);
+    }
+
+    try{
+        // attempt to update the project and push the new task
+        const insert_into_project = await Project.findOneAndUpdate({_id: id, members: user._id}, { $push: { tasks: new_task }}, {new: true});
+
+        if(!insert_into_project) {
+            return res.status(400).send({error: "Could not insert the new task"})
+        }
+
+        // set the inserted task to the most recently pushed task
+        const inserted_task = insert_into_project.tasks[(insert_into_project.tasks.length - 1)];
+
+        const ret_task = {
+            id: inserted_task._id,
+            title: inserted_task.title,
+            description: inserted_task.description,
+            assigned_to: inserted_task.assignedTo
+        };
+
+        // if due date exists in task, then add it to return object
+        if(inserted_task.dueDate){
+            ret_task['due_date'] = new Date(inserted_task.dueDate).toISOString().slice(0,10);
+        }
+
+        return res.status(201).send({ task: ret_task })
+    }
+    catch(e){
+        console.error(`Could not create task for project with id ${id}`);
+        console.error(e);
+        return res.status(500).send({error: "Could not insert new task"})
+    }
+
+})
 
 
 // @PUT /projects/:project_id/tasks/:task_id
