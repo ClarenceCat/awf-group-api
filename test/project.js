@@ -59,6 +59,9 @@ describe("Project API", () => {
             return;
         }
 
+        // add the test user1 to the task 3 assignedTo
+        task3['assignedTo'] = testuser1._id;
+
         // create a project for test user 1
         try{
             // create a project
@@ -357,6 +360,26 @@ describe("Project API", () => {
                 response.body.should.have.property('members');
                 if(response.body.members){
                     response.body.members.length.should.be.eq(1);
+                }
+                done();
+            })
+        })
+    })
+    
+    // TEST 11
+    // ROUTE: @GET /tasks
+    // Description: Test route to retrieve all tasks assigned to a user
+    // Tests happy path
+    // Expected Return: list of tasks assigned to the user
+    describe('GET /tasks', () => {
+        it("Should retrieve a list of tasks assigned to the user", (done) => {
+            chai.request(server).get('/tasks').set("authorization", test_user1_token)
+            .end((err, response) => {
+                response.should.have.status(200);
+                response.body.should.have.property('tasks');
+                if(response.body.tasks){
+                    response.body.tasks.length.should.be.eq(1);
+                    response.body.tasks[0].title.should.eq("test3");
                 }
                 done();
             })
