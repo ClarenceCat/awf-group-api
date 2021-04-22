@@ -108,7 +108,7 @@ router.get('/:id', requireAuth, async (req, res) => {
             // make sure the user exists
             if(member_found){
                 // add the user's first and last name to the list of members that will be returned to the user
-                members.push( `${member_found.firstName} ${member_found.lastName}` )
+                members.push( { name: `${member_found.firstName} ${member_found.lastName}`, email: member_found.email} )
             }
         }
 
@@ -426,7 +426,50 @@ router.delete('/:project_id/tasks/:task_id', requireAuth, async (req, res) => {
 // middleware: requireAuth
 // Description: allows a user to add a member to a project
 // @req - { email }
-// @res - { [members] }
+// @res - { member, email } - returns the name of the new member
+router.post('/:id/members', requireAuth, async (req, res) => {
+    // retrieve the user from the req
+    const { user } = req;
+
+    // retrieve the project id from req props
+    const { id } = req.params;
+
+    // retrieve the email of the user that is to be added
+    const { email } = req.body;
+
+    try{
+        // attempt to find a user with the specified email
+        const new_member = await User.findOne({ email: email });
+
+        // make sure the user exists
+        if(!new_member){
+            return res.status(400).send({ error: "A user with the email you have specified does not exist" });
+        }
+
+
+        // check if the user is alread a member
+        const check_member = await Project.findOne({_id: id, members: new_member._id});
+
+        // check if the user is already a member
+        if(check_member){
+            return res.status(400).send({ error: `A person with the email ${email} is already a member of this project` });
+        }
+
+        const update =  await Project.findOneAndUpdate({_id: id, members: user._id}, { $push: { members: new_member._id }}, {new: true});
+
+        // make sure the project updated with the new member
+        if(!update) {
+            return res.status(400).send({ error: `Failed to add user with email ${email} to the group` });
+        }
+
+        return res.status(200).send({member: {name: `${new_member.firstName} ${new_member.lastName}`, email: new_member.email}});
+
+    }
+    catch(e){
+        console.error(e);
+        return res.status(500).send({ error: "Could not add a new member to the project" });
+    }
+})
 
 
 // @DELETE /projects/:id/members 

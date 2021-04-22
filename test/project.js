@@ -317,4 +317,28 @@ describe("Project API", () => {
             })
         })
     })
+
+    // TEST 9
+    // ROUTE: @POST /projects/:id/members
+    // Description: Tests the route responsible for adding a member to a project
+    // Tests Happy Path
+    // Expected Return: The name and email of the newly created member
+    describe('POST /projects/:id/members', () => {
+        // specify the email of the new member that is to be added
+        const add_member = { email: login2.email };
+
+        it("Should add a new member to the specified project", (done) => {
+            chai.request(server).post(`/projects/${project1._id}/members`).set("authorization", test_user1_token).send(add_member)
+            .end((err, response) => {
+                response.should.have.status(200);
+                response.body.should.have.property('member');
+                if(response.body.member){
+                    response.body.member.should.have.property('name');
+                    response.body.member.should.have.property('email');
+                }
+                done();
+            })
+        })
+    })
+    
 })
