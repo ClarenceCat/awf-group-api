@@ -44,10 +44,10 @@ router.get('/', requireAuth, async (req, res) => {
 
             // check if there is a due date
             if(task.dueDate){
-                insertTask['due_date'] = task.dueDate;
+                insertTask['due_date'] = new Date(task.dueDate).toISOString().slice(0,10);
             }
             else{
-                insertTask['due_date'] = task.dueDate;
+                insertTask['due_date'] = '';
             }
 
             ret_tasks.push(insertTask);

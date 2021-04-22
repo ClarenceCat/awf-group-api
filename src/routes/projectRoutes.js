@@ -115,7 +115,19 @@ router.get('/:id', requireAuth, async (req, res) => {
         let ret_tasks = []
         // process tasks to send 
         for(let task of project.tasks){
-            const add_task = {id: task._id, title: task.title, description: task.description, assigned_to: task.assignedTo};
+            // find make assigned to list
+            let assigned = [];
+
+            for(let u_id of task.assignedTo){
+                // find user
+                const user = await User.findById(u_id);
+
+                if(user){
+                    assigned.push({name: `${user.firstName} ${user.lastName}`, email: user.email});
+                }
+            }
+
+            const add_task = {id: task._id, title: task.title, description: task.description, assigned_to: assigned, created: new Date(task.created).toISOString().slice(0, 10)};
 
             // check if the task has a due date
             if(task.dueDate){
@@ -278,11 +290,22 @@ router.post('/:id/tasks', requireAuth, async (req, res) => {
         // set the inserted task to the most recently pushed task
         const inserted_task = insert_into_project.tasks[(insert_into_project.tasks.length - 1)];
 
+        let assigned = [];
+        // retrieve user info for assigned users
+        for(let u_id of inserted_task.assignedTo){
+            const user = await User.findById(u_id);
+
+            if(user) {
+                assigned.push({name: `${user.firstName} ${user.lastName}`, email: user.email});
+            }
+        }
+
         const ret_task = {
             id: inserted_task._id,
             title: inserted_task.title,
             description: inserted_task.description,
-            assigned_to: inserted_task.assignedTo
+            assigned_to: assigned,
+            created: new Date(inserted_task.created).toISOString().slice(0,10)
         };
 
         // if due date exists in task, then add it to return object
@@ -351,11 +374,22 @@ router.put('/:project_id/tasks/:task_id', requireAuth, async (req, res) => {
 
         const updated_task = update.tasks.id(task_id);
 
+        let assigned = [];
+        // retrieve user info for assigned users
+        for(let u_id of updated_task.assignedTo){
+            const user = await User.findById(u_id);
+
+            if(user) {
+                assigned.push({name: `${user.firstName} ${user.lastName}`, email: user.email});
+            }
+        }
+
         const ret_task = {
             id: updated_task._id,
             title: updated_task.title,
             description: updated_task.description,
-            assigned_to: updated_task.assignedTo
+            assigned_to: assigned,
+            created: new Date(updated_task.created).toISOString().slice(0,10)
         };
         
         // if the updated task has a due date, add it to the return task
@@ -397,7 +431,18 @@ router.delete('/:project_id/tasks/:task_id', requireAuth, async (req, res) => {
         let ret_tasks = [];
         
         for(let task of updated.tasks){
-            let add_task = { id: task._id, title: task.title, description: task.description, assigned_to: task.assignedTo };
+
+            let assigned = [];
+            // retrieve user info for assigned users
+            for(let u_id of task.assignedTo){
+                const user = await User.findById(u_id);
+    
+                if(user) {
+                    assigned.push({name: `${user.firstName} ${user.lastName}`, email: user.email});
+                }
+            }
+
+            let add_task = { id: task._id, title: task.title, description: task.description, assigned_to: assigned, created: new Date(task.created).toISOString().slice(0,10) };
 
             // check if the task has a due date
             if(task.dueDate){
