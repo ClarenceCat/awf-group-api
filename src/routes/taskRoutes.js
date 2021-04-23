@@ -11,6 +11,11 @@ const Project = mongoose.model('Project');
 
 const router = express.Router();
 
+// @GET /tasks
+// middleware: requireAuth
+// Description: This route is used to retrieve all tasks assigned to a user
+// @req: none
+// @res: {tasks: [{ project_id,  id, title, description, created, assigned_to, due_date }]}
 router.get('/', requireAuth, async (req, res) => {
     // get the user id form req object
     const { user } = req;
@@ -24,6 +29,7 @@ router.get('/', requireAuth, async (req, res) => {
             $match : { 'tasks.assignedTo': user._id }
         }, {
             $project : {
+                id: '$tasks._id',
                 title: '$tasks.title',
                 description: '$tasks.description',
                 assignedTo: '$tasks.assignedTo',
@@ -35,12 +41,14 @@ router.get('/', requireAuth, async (req, res) => {
         let ret_tasks = [];
         // loop through the retrieved tasks to generate the return tasks
         for(let task of tasks){
+
+            // loop through assigned list to retrieve users assigned to the task
             let assigned = [];
             for(let user_id of task.assignedTo) {
                 const user = await User.findById(user_id);
                 assigned.push({name: `${user.firstName} ${user.lastName}`, email: user.email});
             }
-            let insertTask = { id: task._id, title: task.title, description: task.description, assigned_to: assigned, created: new Date(task.created).toISOString().slice(0, 10) };
+            let insertTask = {  project_id: task._id, id: task.id, title: task.title, description: task.description, assigned_to: assigned, created: new Date(task.created).toISOString().slice(0, 10) };
 
             // check if there is a due date
             if(task.dueDate){

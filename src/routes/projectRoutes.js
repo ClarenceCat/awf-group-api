@@ -366,7 +366,7 @@ router.put('/:project_id/tasks/:task_id', requireAuth, async (req, res) => {
 
     try{
         // attempt to update the task subdocument
-        const update = await Project.findOneAndUpdate({_id: project_id, "tasks._id": task_id}, {"$set": update_fields }, { new: true });
+        const update = await Project.findOneAndUpdate({_id: project_id, members: user._id, "tasks._id": task_id}, {"$set": update_fields }, { new: true });
 
         if(!update){
             return res.status(400).send({error: "could not update the specified task"});
