@@ -29,7 +29,7 @@ router.get('/', requireAuth, async (req, res) => {
 
         // loop through the project list, and add the project details to the ret_projects list
         for(let project of projects){
-            ret_projects.push({ id: project._id, title: project.title, description: project.description })
+            ret_projects.push({ id: project._id, title: project.title, description: project.description, created: project.created })
         }
 
         // respond with the list objects containing project details
@@ -67,7 +67,7 @@ router.post('/', requireAuth, async (req, res) => {
         const saved_project = await new_project.save();
 
         // respond with the newly created project details
-        return res.status(201).send({ project: { id: saved_project._id, title: saved_project.title, description: saved_project.description } })
+        return res.status(201).send({ project: { id: saved_project._id, title: saved_project.title, description: saved_project.description, created: saved_project.created } })
     }
     catch(e){
         console.error(e);
