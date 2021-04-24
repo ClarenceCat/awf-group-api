@@ -384,6 +384,62 @@ describe("Project API", () => {
                 done();
             })
         })
-    })
+    });
+
+    // TEST 12
+    // ROUTE: @GET /projects/:project_id/tasks/:task_id/members
+    // Description: Test route to assign a user to a task
+    // Tests happy path
+    // Expected Return: the updated task with the new assigned user list
+    describe('POST /projects/:project_id/tasks/:task_id/assigned', () => {
+        const send_email = { email: login2.email };
+        it("Should assign a member to a task", (done) => {
+            chai.request(server).post(`/projects/${project2._id}/tasks/${project2.tasks[0]._id}/assigned`).set("authorization", test_user1_token).send(send_email)
+            .end((err, response) => {
+                response.should.have.status(200);
+                response.body.should.have.property('task');
+                if(response.body.task){
+                    response.body.task.assigned_to.length.should.eq(2);
+                }
+                done();
+            })
+        })
+    });
+
+    // TEST 13
+    // ROUTE: @GET /projects/:project_id/tasks/:task_id/members
+    // Description: Test route to assign a user to a task 
+    // Tests Boundary Condition - the user is already assigned to the task
+    // Expected Return: 400 status
+    describe('POST /projects/:project_id/tasks/:task_id/assigned', () => {
+        const send_email = { email: login1.email };
+        it("Should not add user to the task - repeat user", (done) => {
+            chai.request(server).post(`/projects/${project2._id}/tasks/${project2.tasks[0]._id}/assigned`).set("authorization", test_user1_token).send(send_email)
+            .end((err, response) => {
+                response.should.have.status(400);
+                done();
+            })
+        })
+    });
+
+    // TEST 14
+    // ROUTE: @GET /projects/:project_id/tasks/:task_id/members
+    // Description: Test route to assign a user to a task 
+    // Tests Boundary Condition - the user is already assigned to the task
+    // Expected Return: 400 status
+    describe('DELETE /projects/:project_id/tasks/:task_id/assigned', () => {
+        const send_email = { email: login1.email };
+        it("Should remove a member from a task", (done) => {
+            chai.request(server).delete(`/projects/${project2._id}/tasks/${project2.tasks[0]._id}/assigned`).set("authorization", test_user1_token).send(send_email)
+            .end((err, response) => {
+                response.should.have.status(200);
+                response.body.should.have.property('task');
+                if(response.body.task){
+                    response.body.task.assigned_to.length.should.eq(0);
+                }
+                done();
+            })
+        })
+    });
     
 })

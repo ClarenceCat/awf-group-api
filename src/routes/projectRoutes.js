@@ -467,6 +467,157 @@ router.delete('/:project_id/tasks/:task_id', requireAuth, async (req, res) => {
 })
 
 
+// @POST /projects/:project_id/tasks/:task_id/assigned
+// middleware: requireAuth
+// Description: allows a user to assign a member to a task
+// @req - { email }
+// @res - { task: { project_id, id, title, description, assigned_to, created, due_date } }
+router.post('/:project_id/tasks/:task_id/assigned', requireAuth, async (req, res) => {
+
+    // retrieve user from req
+    const { user } = req;
+
+    // retrieve the project and task id from the params
+    const { project_id, task_id } = req.params;
+
+    // extract email from req body
+    const { email } = req.body;
+
+    try{
+        // find user by email
+        const assigned_user = await User.findOne({email: email});
+
+        // make sure user exists
+        if(!assigned_user){
+            return res.status(400).send({ error: `User with email ${email} does not exist` });
+        }
+
+        // find the project to make sure that the user is not already assigned to the task
+        const alreadyExists = await Project.findOne({ tasks: { "$elemMatch": {"assignedTo": assigned_user._id} } });
+
+        // check if user already exists
+        if(alreadyExists){
+            return res.status(400).send({error: `${assigned_user.firstName} ${assigned_user.lastName} is already assigned to this task`});
+        }
+
+        // attempt to update a task
+        const updated_project = await Project.findOneAndUpdate({ _id: project_id, members: assigned_user._id, "tasks._id": task_id,  },
+         {$addToSet: {"tasks.$.assignedTo": assigned_user._id}}, {new: true}
+        );
+        
+        if(!updated_project){
+            return res.status(400).send({error: "User is not a member of the project or is already assigned to the Task"});
+        }
+
+        const updated_task = updated_project.tasks.id(task_id);
+
+        // build the response
+        let ret_assigned = [];
+        for(let member of updated_task.assignedTo){
+            // find the user by the id
+            const found_user = await User.findById(member);
+
+            if(found_user){
+                ret_assigned.push({name: `${found_user.firstName} ${found_user.lastName}`, email: found_user.email})
+            }
+        }
+
+        const ret_task = { project_id: updated_project._id , id: updated_task._id, title: updated_task.title, description: updated_task.description, assigned_to: ret_assigned, created: new Date(updated_task.created).toISOString().slice(0,10)};
+        
+        if(ret_task.dueDate){
+            // add due date to the add_task object
+            ret_task['due_date'] = new Date(updated_task.dueDate).toISOString().slice(0,10);
+        }
+        else{
+            ret_task['due_date'] = '';
+        }
+
+        // return the updated task
+        return res.status(200).send({task: ret_task});
+
+    }
+    catch(e){
+        return res.status(500).send({error: "There was an error assigning a user to this task"});
+    }
+})
+
+
+// @DELETE /projects/:project_id/tasks/:task_id/assigned
+// middleware: requireAuth
+// Description: allows a user to remove a member from a task
+// @req - { email }
+// @res - { task: { project_id, id, title, description, assigned_to, created, due_date } }
+router.delete('/:project_id/tasks/:task_id/assigned', requireAuth, async (req, res) => {
+
+    // retrieve user from req
+    const { user } = req;
+
+    // retrieve the project and task id from the params
+    const { project_id, task_id } = req.params;
+
+    // extract email from req body
+    const { email } = req.body;
+
+    try{
+        // find user by email
+        const assigned_user = await User.findOne({email: email});
+
+        // make sure user exists
+        if(!assigned_user){
+            return res.status(400).send({ error: `User with email ${email} does not exist` });
+        }
+
+        // find the project to make sure that the user is not already assigned to the task
+        const alreadyExists = await Project.findOne({ members: user._id, tasks: { "$elemMatch": {"assignedTo": assigned_user._id} } });
+
+        // check if user already exists
+        if(!alreadyExists){
+            return res.status(400).send({error: `${assigned_user.firstName} ${assigned_user.lastName} is not assigned to this task`});
+        }
+
+        // attempt to update a task
+        const updated_project = await Project.findOneAndUpdate({ _id: project_id, members: assigned_user._id, "tasks._id": task_id,  },
+         {$pull: {"tasks.$.assignedTo": assigned_user._id}}, {new: true}
+        );
+
+        
+        if(!updated_project){
+            return res.status(400).send({error: "User is not a member of the project or is already assigned to the Task"});
+        }
+
+        const updated_task = updated_project.tasks.id(task_id);
+
+        // build the response
+        let ret_assigned = [];
+        for(let member of updated_task.assignedTo){
+            // find the user by the id
+            const found_user = await User.findById(member);
+
+            if(found_user){
+                ret_assigned.push({name: `${found_user.firstName} ${found_user.lastName}`, email: found_user.email})
+            }
+        }
+
+        const ret_task = { project_id: updated_project._id , id: updated_task._id, title: updated_task.title, description: updated_task.description, assigned_to: ret_assigned, created: new Date(updated_task.created).toISOString().slice(0,10)};
+        
+        if(ret_task.dueDate){
+            // add due date to the add_task object
+            ret_task['due_date'] = new Date(updated_task.dueDate).toISOString().slice(0,10);
+        }
+        else{
+            ret_task['due_date'] = '';
+        }
+
+        // return the updated task
+        return res.status(200).send({task: ret_task});
+
+    }
+    catch(e){
+        return res.status(500).send({error: "There was an error assigning a user to this task"});
+    }
+})
+
+
 // @POST /projects/:id/members
 // middleware: requireAuth
 // Description: allows a user to add a member to a project
