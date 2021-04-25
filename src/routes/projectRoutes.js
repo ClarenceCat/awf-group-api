@@ -103,7 +103,7 @@ router.get('/:id', requireAuth, async (req, res) => {
         // loop through the members and search for the corresponding user to add to member list
         for(let member_id of project.members){
             // attempt to find the user with the id 
-            const member_found = User.findById(member_id);
+            const member_found = await User.findById(member_id);
 
             // make sure the user exists
             if(member_found){
