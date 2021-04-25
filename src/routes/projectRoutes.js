@@ -108,7 +108,7 @@ router.get('/:id', requireAuth, async (req, res) => {
             // make sure the user exists
             if(member_found){
                 // add the user's first and last name to the list of members that will be returned to the user
-                members.push( { name: `${member_found.firstName} ${member_found.lastName}`, email: member_found.email} )
+                members.push( { firstName: member_found.firstName, lastName: member_found.lastName, email: member_found.email} )
             }
         }
 
@@ -123,7 +123,7 @@ router.get('/:id', requireAuth, async (req, res) => {
                 const user = await User.findById(u_id);
 
                 if(user){
-                    assigned.push({name: `${user.firstName} ${user.lastName}`, email: user.email});
+                    assigned.push({firstName: user.firstName, lastName: user.lastName, email: user.email});
                 }
             }
 
@@ -296,7 +296,7 @@ router.post('/:id/tasks', requireAuth, async (req, res) => {
             const user = await User.findById(u_id);
 
             if(user) {
-                assigned.push({name: `${user.firstName} ${user.lastName}`, email: user.email});
+                assigned.push({firstName: user.firstName, lastName: user.lastName, email: user.email});
             }
         }
 
@@ -380,7 +380,7 @@ router.put('/:project_id/tasks/:task_id', requireAuth, async (req, res) => {
             const user = await User.findById(u_id);
 
             if(user) {
-                assigned.push({name: `${user.firstName} ${user.lastName}`, email: user.email});
+                assigned.push({ firstName: user.firstName, lastName: user.lastName, email: user.email});
             }
         }
 
@@ -438,7 +438,7 @@ router.delete('/:project_id/tasks/:task_id', requireAuth, async (req, res) => {
                 const user = await User.findById(u_id);
     
                 if(user) {
-                    assigned.push({name: `${user.firstName} ${user.lastName}`, email: user.email});
+                    assigned.push({firstName: user.firstName, lastName: user.lastName, email: user.email});
                 }
             }
 
@@ -518,7 +518,7 @@ router.post('/:project_id/tasks/:task_id/assigned', requireAuth, async (req, res
             const found_user = await User.findById(member);
 
             if(found_user){
-                ret_assigned.push({name: `${found_user.firstName} ${found_user.lastName}`, email: found_user.email})
+                ret_assigned.push({firstName: found_user.firstName, lastName: found_user.lastName, email: found_user.email})
             }
         }
 
@@ -594,7 +594,7 @@ router.delete('/:project_id/tasks/:task_id/assigned', requireAuth, async (req, r
             const found_user = await User.findById(member);
 
             if(found_user){
-                ret_assigned.push({name: `${found_user.firstName} ${found_user.lastName}`, email: found_user.email})
+                ret_assigned.push({ firstName: found_user.firstName, lastName: found_user.lastName, email: found_user.email})
             }
         }
 
@@ -658,7 +658,7 @@ router.post('/:id/members', requireAuth, async (req, res) => {
             return res.status(400).send({ error: `Failed to add user with email ${email} to the group` });
         }
 
-        return res.status(200).send({member: {name: `${new_member.firstName} ${new_member.lastName}`, email: new_member.email}});
+        return res.status(200).send({member: {firstName: new_member.new_member, lastName: new_member.lastName, email: new_member.email}});
 
     }
     catch(e){
@@ -709,7 +709,7 @@ router.delete('/:id/members', requireAuth, async (req, res) => {
 
             if(found_user){
                 // add the found user to the list of members to be returned
-                ret_members.push({name: `${found_user.firstName} ${found_user.lastName}`, email: found_user.email});
+                ret_members.push({firstName: found_user.firstName, lastName: found_user.lastName, email: found_user.email});
             }
         }
 
