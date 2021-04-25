@@ -658,7 +658,7 @@ router.post('/:id/members', requireAuth, async (req, res) => {
             return res.status(400).send({ error: `Failed to add user with email ${email} to the group` });
         }
 
-        return res.status(200).send({member: {firstName: new_member.new_member, lastName: new_member.lastName, email: new_member.email}});
+        return res.status(200).send({member: {firstName: new_member.firstName, lastName: new_member.lastName, email: new_member.email}});
 
     }
     catch(e){

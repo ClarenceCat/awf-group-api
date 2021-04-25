@@ -46,7 +46,7 @@ router.get('/', requireAuth, async (req, res) => {
             let assigned = [];
             for(let user_id of task.assignedTo) {
                 const user = await User.findById(user_id);
-                assigned.push({name: `${user.firstName} ${user.lastName}`, email: user.email});
+                assigned.push({firstName: user.firstName, lastName: user.lastName, email: user.email});
             }
             let insertTask = {  project_id: task._id, id: task.id, title: task.title, description: task.description, assigned_to: assigned, created: new Date(task.created).toISOString().slice(0, 10) };
 

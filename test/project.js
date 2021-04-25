@@ -336,7 +336,8 @@ describe("Project API", () => {
                 response.should.have.status(200);
                 response.body.should.have.property('member');
                 if(response.body.member){
-                    response.body.member.should.have.property('name');
+                    response.body.member.should.have.property('firstName');
+                    response.body.member.should.have.property('lastName');
                     response.body.member.should.have.property('email');
                 }
                 done();
