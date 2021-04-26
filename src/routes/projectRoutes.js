@@ -577,17 +577,18 @@ router.post(
       }
 
       // find the project to make sure that the user is not already assigned to the task
-      //   const alreadyExists = await Project.findOne({
-      //     tasks: { $elemMatch: { assignedTo: assigned_user._id } },
-      //   });
+      const alreadyExists = await Project.findOne({
+        _id: project_id,
+        tasks: { $elemMatch: { _id: task_id, assignedTo: assigned_user._id } },
+      });
 
+      console.log(alreadyExists);
       // check if user already exists
-      //   if (alreadyExists) {
-      //
-      //     return res.status(400).send({
-      //       error: `${assigned_user.firstName} ${assigned_user.lastName} is already assigned to this task`,
-      //     });
-      //   }
+      if (alreadyExists) {
+        return res.status(400).send({
+          error: `${assigned_user.firstName} ${assigned_user.lastName} is already assigned to this task`,
+        });
+      }
 
       // attempt to update a task
       const updated_project = await Project.findOneAndUpdate(
