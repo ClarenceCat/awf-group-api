@@ -540,7 +540,6 @@ router.delete("/:project_id/tasks/:task_id", requireAuth, async (req, res) => {
 
     return res.status(200).send({ tasks: ret_tasks });
   } catch (e) {
-    console.error(e);
     return res
       .status(500)
       .send({ error: "Failed to delete the specified post" });
@@ -582,7 +581,6 @@ router.post(
         tasks: { $elemMatch: { _id: task_id, assignedTo: assigned_user._id } },
       });
 
-      console.log(alreadyExists);
       // check if user already exists
       if (alreadyExists) {
         return res.status(400).send({
